@@ -1,0 +1,353 @@
+/* =========================================================================
+   SAGE AI ENTERPRISE - HARMONY PALETTE & BE VIETNAM PRO TYPOGRAPHY
+   Colors from User Palette: #5D7B6F, #A4C3A2, #B0D4B8, #EAE7D6, #D7F9FA
+   Typography: 'Be Vietnam Pro' & 'Inter' (Chuẩn quốc tế & Tối ưu hóa tiếng Việt)
+   Bố cục: Master-Detail 2 cột tinh tế, sang trọng, tuyệt đối không rối mắt
+   ========================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Exact Colors from User's Coolors Screenshot */
+  --color-sage-deep: #5D7B6F;
+  --color-sage-mid: #A4C3A2;
+  --color-sage-soft: #B0D4B8;
+  --color-linen-warm: #EAE7D6;
+  --color-ice-aqua: #D7F9FA;
+
+  /* Extended Harmony */
+  --bg-page: #F8FAF9;
+  --bg-glass: rgba(255, 255, 255, 0.92);
+  --border-glass: rgba(164, 195, 162, 0.45);
+
+  --text-title: #22332C;
+  --text-body: #344840;
+  --text-muted: #566961;
+  --text-dim: #7F938B;
+
+  --accent-alert: #D96B6B;
+  --accent-warning: #D99B52;
+  --accent-success: #5D7B6F;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   CRITICAL RESILIENCE & FALLBACK UTILITIES (GUARANTEES 100% PERFECT RENDERING)
+   ========================================================================= */
+.hidden, [hidden] {
+  display: none !important;
+}
+
+.block { display: block; }
+.inline-block { display: inline-block; }
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.grid { display: grid; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.w-full { width: 100%; }
+.max-w-3xl { max-width: 48rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.pointer-events-none { pointer-events: none; }
+
+svg.lucide, i[data-lucide] {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+body {
+  font-family: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-page);
+  background-image: 
+    radial-gradient(ellipse at 8% 8%, rgba(215, 249, 250, 0.75) 0%, transparent 45%),
+    radial-gradient(ellipse at 92% 12%, rgba(176, 212, 184, 0.55) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 88%, rgba(234, 231, 214, 0.75) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 82%, rgba(164, 195, 162, 0.45) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-body);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  line-height: 1.62;
+  letter-spacing: -0.01em;
+}
+
+.font-mono, code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Thẻ Kính Mờ Chỉn Chu (Elegant Frosted Glassmorphism) */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  box-shadow: 
+    0 10px 30px -4px rgba(93, 123, 111, 0.08),
+    0 2px 8px -1px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+}
+
+.glass-card-subtle {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(164, 195, 162, 0.35);
+  border-radius: 16px;
+}
+
+/* Nút Bấm Chính Dùng Màu #5D7B6F */
+.btn-sage {
+  background-color: var(--color-sage-deep);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 0.68rem 1.4rem;
+  border: none;
+  box-shadow: 0 4px 14px rgba(93, 123, 111, 0.28);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.825rem;
+}
+.btn-sage:hover:not(:disabled) {
+  background-color: #4C675C;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(93, 123, 111, 0.38);
+}
+
+.btn-sage-outline {
+  background-color: rgba(255, 255, 255, 0.95);
+  color: var(--color-sage-deep);
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 0.62rem 1.25rem;
+  border: 1.5px solid var(--color-sage-mid);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.825rem;
+}
+.btn-sage-outline:hover:not(:disabled) {
+  background-color: #ffffff;
+  border-color: var(--color-sage-deep);
+  color: #384C44;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Vùng Kéo Thả Tệp */
+.sage-drop-zone {
+  border: 2px dashed var(--color-sage-mid);
+  background: rgba(215, 249, 250, 0.35);
+  border-radius: 20px;
+  transition: all 0.25s ease;
+}
+.sage-drop-zone:hover, .sage-drop-zone.dragover {
+  border-color: var(--color-sage-deep);
+  background: rgba(215, 249, 250, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -4px rgba(93, 123, 111, 0.18);
+}
+
+/* =========================================================================
+   BẢNG DỮ LIỆU RỘNG RÃI & KHÔNG XÔ LỆCH (SPACIOUS DATA TABLES)
+   ========================================================================= */
+.spacious-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(164, 195, 162, 0.4);
+  background: #ffffff;
+  box-shadow: 0 4px 16px -2px rgba(93, 123, 111, 0.05);
+  max-height: 480px;
+  position: relative;
+}
+
+.sage-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.sage-table th {
+  background: #EAE7D6;
+  color: var(--text-title);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.725rem;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--color-sage-mid);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sage-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(164, 195, 162, 0.2);
+  color: var(--text-body);
+  background: #ffffff;
+  vertical-align: middle;
+}
+
+.sage-table tbody tr:nth-child(even) td {
+  background: rgba(247, 246, 240, 0.5);
+}
+
+.sage-table tbody tr:hover td {
+  background: rgba(215, 249, 250, 0.4) !important;
+}
+
+/* Huy hiệu loại dữ liệu */
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.type-numeric {
+  background: rgba(176, 212, 184, 0.4);
+  color: #22332C;
+  border: 1px solid #A4C3A2;
+}
+.type-date {
+  background: rgba(215, 249, 250, 0.7);
+  color: #1E3D3A;
+  border: 1px solid #99DDE0;
+}
+.type-categorical {
+  background: rgba(234, 231, 214, 0.8);
+  color: #4A4230;
+  border: 1px solid #CEC8AE;
+}
+.type-string {
+  background: #F1F4F2;
+  color: #41534C;
+  border: 1px solid #D1DDD7;
+}
+
+/* Hộp nhận xét học thuật & chuyên môn */
+.academic-box {
+  background: rgba(234, 231, 214, 0.45);
+  border-left: 4px solid var(--color-sage-deep);
+  border-radius: 0 14px 14px 0;
+  padding: 14px 16px;
+}
+
+/* Progress Step Pills */
+.step-nav-item {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.step-nav-item.active {
+  background: #ffffff;
+  border: 1.5px solid var(--color-sage-deep);
+  color: var(--color-sage-deep);
+  box-shadow: 0 4px 14px rgba(93, 123, 111, 0.16);
+}
+.step-nav-item.completed {
+  background: rgba(176, 212, 184, 0.4);
+  border: 1px solid var(--color-sage-mid);
+  color: var(--color-sage-deep);
+}
+.step-nav-item.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border: 1px dashed rgba(164, 195, 162, 0.45);
+}
+
+/* Con Dấu Kiểm Định Số */
+.sage-stamp {
+  border: 2px dashed var(--color-sage-deep);
+  color: var(--color-sage-deep);
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: rgba(176, 212, 184, 0.3);
+  font-weight: 700;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+}
+
+/* Bảng chú thích biểu đồ */
+.chart-legend-table {
+  width: 100%;
+  font-size: 0.775rem;
+  border-collapse: collapse;
+}
+.chart-legend-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(164, 195, 162, 0.3);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+.chart-legend-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(164, 195, 162, 0.15);
+  color: var(--text-title);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sage-mid);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sage-deep);
+}
+
+/* Print */
+@media print {
+  body {
+    background: #fff !important;
+  }
+  .no-print, #chatAssistantBar, #pageTopNav {
+    display: none !important;
+  }
+  .glass-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}

@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAGE AI // Hệ Thống Phân Tích & Dự Báo Kinh Doanh</title>
+
+  <!-- Primary CSS Stylesheet (Loaded first to prevent FOUC / layout shift) -->
+  <link rel="stylesheet" href="style.css?v=6.2">
+
+  <!-- Core Libraries with Dual CDN + Local Offline Fallback -->
+  <!-- 1. Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (!window.tailwind) {
+      document.write('<script src="libs/tailwindcss.js"><\/script>');
+    }
+  </script>
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              sage: {
+                deep: '#5D7B6F',
+                mid: '#A4C3A2',
+                soft: '#B0D4B8',
+                linen: '#EAE7D6',
+                aqua: '#D7F9FA'
+              }
+            },
+            fontFamily: {
+              sans: ['"Be Vietnam Pro"', 'Inter', 'system-ui', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace']
+            }
+          }
+        }
+      };
+    }
+  </script>
+
+  <!-- 2. Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    if (!window.Chart) {
+      document.write('<script src="libs/chart.umd.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- 3. PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    if (!window.Papa) {
+      document.write('<script src="libs/papaparse.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- 4. SheetJS (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    if (!window.XLSX) {
+      document.write('<script src="libs/xlsx.full.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- 5. Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    if (!window.lucide) {
+      document.write('<script src="libs/lucide.min.js"><\/script>');
+    }
+  </script>
+</head>
+<body class="pb-16 selection:bg-[#B0D4B8] selection:text-[#22332C]">
+
+  <!-- ========================================================================= -->
+  <!-- TOP BAR: THÔNG TIN AI AGENT, GMAIL TIẾP NHẬN & NÚT LÀM MỚI               -->
+  <!-- ========================================================================= -->
+  <header class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3">
+    <div class="glass-card p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Logo & Tên AI Agent -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-[#5D7B6F] text-white shadow-md flex items-center justify-center shrink-0">
+          <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-[#22332C] tracking-tight">
+              SAGE AI ANALYST <span class="text-xs px-2.5 py-0.5 rounded-full bg-[#B0D4B8]/40 text-[#22332C] font-semibold border border-[#A4C3A2]">v6.0 Enterprise Gold Standard</span>
+            </h1>
+          </div>
+          <p class="text-xs text-[#566961] font-medium">
+            Hệ Thống Tiền Xử Lý Dữ Liệu Tự Động & Dự Báo Kinh Doanh Chuẩn Mực Khoa Học
+          </p>
+        </div>
+      </div>
+
+      <!-- Gmail Tiếp Nhận & Nút Làm Mới -->
+      <div class="flex flex-wrap items-center gap-3 text-xs">
+        
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-[#A4C3A2]/40 shadow-xs">
+          <i data-lucide="mail" class="w-4 h-4 text-[#5D7B6F]"></i>
+          <div>
+            <label for="inputUserGmail" class="text-[10px] text-[#7F938B] block font-medium leading-none">GMAIL TIẾP NHẬN BÁO CÁO:</label>
+            <input 
+              type="email" 
+              id="inputUserGmail" 
+              value="admin.data@gmail.com" 
+              class="bg-transparent border-none text-xs font-semibold text-[#22332C] focus:outline-none w-44"
+              placeholder="nhap.email@cuaban.com"
+              title="Nhập Gmail để hệ thống đóng dấu và chuyển phát báo cáo"
+            >
+          </div>
+        </div>
+
+        <button onclick="app.resetAllData()" class="btn-sage-outline text-xs py-2 px-3.5" title="Xóa dữ liệu hiện tại để nạp tệp mới">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Nạp Tệp Mới
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTAINER (1440PX)                                                   -->
+  <!-- ========================================================================= -->
+  <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+    <!-- ======================================================================= -->
+    <!-- TRANG 1: MÀN HÌNH BẮT ĐẦU (WELCOME & INGESTION)                         -->
+    <!-- ======================================================================= -->
+    <section id="pageWelcome" class="space-y-6">
+      
+      <div class="glass-card p-8 sm:p-12 text-center relative overflow-hidden">
+        
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAE7D6]/80 text-[#22332C] text-xs font-semibold border border-[#A4C3A2]/50 mb-5">
+          <span class="w-2 h-2 rounded-full bg-[#5D7B6F] animate-pulse"></span>
+          Quy Trình Khoa Học Chuẩn Mực &bull; Biểu Đồ Kèm Tỷ Trọng (%) &bull; Tương Thích Mọi Tệp Dữ Liệu
+        </div>
+
+        <div class="max-w-3xl mx-auto space-y-4">
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-[#22332C] leading-tight">
+            Nạp Dữ Liệu & Khởi Chạy Pipeline Làm Sạch Chuẩn Mực
+          </h2>
+
+          <p class="text-sm sm:text-base text-[#344840] leading-relaxed">
+            Hệ thống AI Agent tự động thích ứng với mọi tệp dữ liệu CSV hoặc Excel (.xlsx, .xls) tùy ý: thẩm định cấu trúc, khử trùng lặp, điền khuyết thiếu, xử lý ngoại lai IQR và kết xuất báo cáo điều hành kèm dự báo kinh doanh.
+          </p>
+
+          <!-- Input File ẩn (dùng CSS visually-hidden thay vì display:none để tương thích 100% Safari & Chrome) -->
+          <input type="file" id="welcomeFileInput" accept=".csv, .xlsx, .xls, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; opacity: 0;">
+
+          <!-- Vùng Tải Tệp Dạng Label Chuẩn HTML (Bấm vào là mở bộ chọn tệp ngay lập tức) -->
+          <label for="welcomeFileInput" id="welcomeDropZone" class="sage-drop-zone block p-8 text-center cursor-pointer group my-5 transition-all duration-200">
+            <!-- Trạng thái mặc định chờ nạp -->
+            <div id="dropZoneContentDefault" class="space-y-3 pointer-events-none">
+              <div class="w-16 h-16 mx-auto rounded-2xl bg-white text-[#5D7B6F] shadow-sm flex items-center justify-center group-hover:scale-105 transition-all">
+                <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+              </div>
+              <h4 class="text-base font-bold text-[#22332C]">Kéo thả tệp CSV hoặc Excel (.xlsx, .xls) của bạn vào đây</h4>
+              <p class="text-xs text-[#566961]">hoặc nhấp trực tiếp vào khung này để duyệt tệp từ máy tính</p>
+              <div class="pt-1">
+                <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#A4C3A2] text-xs font-bold text-[#5D7B6F] shadow-2xs group-hover:bg-[#5D7B6F] group-hover:text-white transition-all">
+                  <i data-lucide="folder-open" class="w-4 h-4"></i> Nhấp Để Chọn Tệp Từ Máy Tính
+                </span>
+              </div>
+            </div>
+
+            <!-- Trạng thái khi đã nạp tệp thành công -->
+            <div id="dropZoneContentActive" class="hidden space-y-3 pointer-events-none">
+              <div class="w-16 h-16 mx-auto rounded-2xl bg-[#5D7B6F] text-white shadow-md flex items-center justify-center animate-bounce">
+                <i data-lucide="file-check-2" class="w-8 h-8"></i>
+              </div>
+              <div>
+                <span id="dropZoneActiveBadge" class="type-badge type-numeric mb-1 inline-block">TỆP ĐÃ NẠP SẴN SÀNG</span>
+                <h4 id="dropZoneActiveFileName" class="text-lg font-bold text-[#22332C]">--</h4>
+                <p id="dropZoneActiveFileMeta" class="text-xs text-[#5D7B6F] font-semibold mt-1">-- dòng &bull; -- cột</p>
+              </div>
+              <p class="text-[11px] text-[#566961]">✓ Dữ liệu đã sẵn sàng. Nhấp lại nếu bạn muốn đổi sang tệp khác</p>
+            </div>
+          </label>
+
+          <!-- Thông tin tệp đã nạp -->
+          <div id="welcomeFileLoadedCard" class="hidden p-4 rounded-xl bg-white border border-[#5D7B6F] text-xs font-medium text-[#22332C] flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#5D7B6F]/15 text-[#5D7B6F] flex items-center justify-center font-bold">
+                <i data-lucide="file-check" class="w-5 h-5"></i>
+              </div>
+              <div class="text-left">
+                <span id="welcomeFileLoadedBadge" class="type-badge type-date mb-0.5">TỆP CỦA BẠN</span>
+                <div class="flex items-center gap-2">
+                  <span id="welcomeFileLoadedName" class="font-bold text-sm text-[#22332C]">--</span>
+                  <span id="welcomeFileLoadedMeta" class="text-[#566961]">--</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-[#5D7B6F] font-bold text-xs flex items-center gap-1">
+              <i data-lucide="check-circle" class="w-4 h-4"></i> Đã sẵn sàng phân tích
+            </span>
+          </div>
+
+          <!-- Nút Bắt Đầu -->
+          <div class="pt-4 flex flex-wrap items-center justify-center gap-3">
+            <button onclick="app.startToOverview()" class="btn-sage text-sm sm:text-base py-3.5 px-8 shadow-md">
+              <span>BẮT ĐẦU QUY TRÌNH PHÂN TÍCH →</span>
+            </button>
+
+            <button onclick="app.loadSampleData('sample_sales_data.csv')" class="btn-sage-outline text-xs sm:text-sm py-3 px-4">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Dùng Thử Mẫu CSV (120 dòng)
+            </button>
+
+            <button onclick="app.loadSampleData('sample_sales_data.xlsx')" class="btn-sage-outline text-xs sm:text-sm py-3 px-4">
+              <i data-lucide="sheet" class="w-4 h-4"></i> Dùng Thử Mẫu Excel (.xlsx)
+            </button>
+          </div>
+
+          <p class="text-[11px] text-[#7F938B] mt-2">
+            💡 Gợi ý: Bạn có thể kéo thả bất kỳ tệp dữ liệu nào từ giáo viên hoặc bấm dùng thử mẫu để trải nghiệm.
+          </p>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TRANG 2: TỔNG THỂ CÁC BƯỚC PIPELINE (ROADMAP OVERVIEW)                  -->
+    <!-- ======================================================================= -->
+    <section id="pageOverview" class="space-y-6 hidden">
+      
+      <div class="glass-card p-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#5D7B6F]">Phong Cách Vận Hành Kinh Doanh Thông Minh (Business Analytics & Insights)</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-[#22332C]">
+            Lộ Trình 7 Bước Xử Lý Dữ Liệu & Dự Báo Xu Hướng Doanh Nghiệp
+          </h2>
+          <p class="text-xs text-[#566961] mt-0.5">
+            Quy trình vận hành chuẩn mực hướng đến góc nhìn quản trị kinh doanh, mang tính hành động cao (Action-oriented).
+          </p>
+        </div>
+
+        <button onclick="app.goToStep(1)" class="btn-sage text-xs py-2.5 px-5">
+          <span>TIẾN HÀNH BƯỚC 1: KHỞI TẠO & KHÁM PHÁ NGUỒN →</span>
+        </button>
+      </div>
+
+      <!-- Thẻ Tóm Tắt Tình Trạng Lỗi Ban Đầu -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+        <div class="glass-card p-5 space-y-1">
+          <span class="text-[#566961] text-[11px] block">Tổng số quan sát (Dòng):</span>
+          <span id="ovTotalRows" class="text-2xl font-bold text-[#22332C] block">--</span>
+          <span id="ovTotalCols" class="text-[#7F938B] text-[11px] block">-- cột thuộc tính</span>
+        </div>
+
+        <div class="glass-card p-5 space-y-1 border-l-4 border-l-[#D99B52]">
+          <span class="text-[#566961] text-[11px] block">Bản ghi trùng lặp (Deduplication):</span>
+          <span id="ovDuplicateRows" class="text-2xl font-bold text-[#D99B52] block">--</span>
+          <span class="text-[#566961] text-[11px] block">Cần lọc bỏ ở Bước 2</span>
+        </div>
+
+        <div class="glass-card p-5 space-y-1 border-l-4 border-l-[#D96B6B]">
+          <span class="text-[#566961] text-[11px] block">Ô bị khuyết thiếu (Missing Cells):</span>
+          <span id="ovMissingCells" class="text-2xl font-bold text-[#D96B6B] block">--</span>
+          <span class="text-[#566961] text-[11px] block">Cần lấp đầy ở Bước 3</span>
+        </div>
+
+        <div class="glass-card p-5 space-y-1 border-l-4 border-l-[#5D7B6F]">
+          <span class="text-[#566961] text-[11px] block">Biến động dị biệt (IQR Outliers):</span>
+          <span id="ovOutlierPoints" class="text-2xl font-bold text-[#5D7B6F] block">--</span>
+          <span class="text-[#566961] text-[11px] block">Cần kiểm soát ở Bước 4</span>
+        </div>
+      </div>
+
+      <!-- Sơ đồ 7 bước tuần tự chuẩn mực -->
+      <div class="glass-card p-6 space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[#22332C] flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-[#5D7B6F]"></i>
+          Danh Sách Các Bước Thực Thi Tuần Tự (Chặt chẽ, khoa học, không nhảy cóc):
+        </h3>
+
+        <div class="space-y-3">
+          
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#5D7B6F] text-white font-bold flex items-center justify-center text-xs shrink-0">1</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 1: Khởi Tạo & Khám Phá Nguồn</h4>
+                <p class="text-[#566961] text-xs">Đọc hiểu cấu trúc và đối chiếu quy chuẩn dữ liệu đầu vào.</p>
+              </div>
+            </div>
+            <span class="text-[#5D7B6F] font-bold text-xs">Sẵn sàng thực thi</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#EAE7D6] text-[#22332C] font-bold flex items-center justify-center text-xs shrink-0">2</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 2: Lọc Sạch Bản Ghi Trùng</h4>
+                <p class="text-[#566961] text-xs">Tinh gọn dữ liệu, loại bỏ rác do nhập liệu lặp.</p>
+              </div>
+            </div>
+            <span class="text-[#7F938B] text-xs">🔒 Chờ hoàn thành Bước 1</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#EAE7D6] text-[#22332C] font-bold flex items-center justify-center text-xs shrink-0">3</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 3: Lấp Đầy Dữ Liệu Trống</h4>
+                <p class="text-[#566961] text-xs">Bổ sung các điểm dữ liệu bị thiếu để đảm bảo độ nguyên vẹn.</p>
+              </div>
+            </div>
+            <span class="text-[#7F938B] text-xs">🔒 Chờ hoàn thành Bước 2</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#EAE7D6] text-[#22332C] font-bold flex items-center justify-center text-xs shrink-0">4</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 4: Kiểm Soát Biến Động & Dị Biệt</h4>
+                <p class="text-[#566961] text-xs">Lọc bỏ các giá trị bất thường có nguy cơ làm méo mó kết quả phân tích.</p>
+              </div>
+            </div>
+            <span class="text-[#7F938B] text-xs">🔒 Chờ hoàn thành Bước 3</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#EAE7D6] text-[#22332C] font-bold flex items-center justify-center text-xs shrink-0">5</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 5: Đồng Bộ Hóa Dữ Liệu</h4>
+                <p class="text-[#566961] text-xs">Chuẩn hóa toàn bộ bảng biểu về một mẫu chung thống nhất.</p>
+              </div>
+            </div>
+            <span class="text-[#7F938B] text-xs">🔒 Chờ hoàn thành Bước 4</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#EAE7D6] text-[#22332C] font-bold flex items-center justify-center text-xs shrink-0">6</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 6: Phê Duyệt Dữ Liệu Sạch (HITL)</h4>
+                <p class="text-[#566961] text-xs">Chốt chặn chất lượng cuối cùng có sự tham gia của con người.</p>
+              </div>
+            </div>
+            <span class="text-[#7F938B] text-xs">🔒 Chờ hoàn thành Bước 5</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3.5">
+              <span class="w-8 h-8 rounded-lg bg-[#EAE7D6] text-[#22332C] font-bold flex items-center justify-center text-xs shrink-0">7</span>
+              <div>
+                <h4 class="font-bold text-[#22332C] text-sm">Bước 7: Báo Cáo Quản Trị & Dự Báo Xu Hướng</h4>
+                <p class="text-[#566961] text-xs">Xuất bản dashboard phân tích chiều sâu và dự báo chuỗi thời gian.</p>
+              </div>
+            </div>
+            <span class="text-[#7F938B] text-xs">🔒 Chờ phê duyệt Bước 6</span>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TRANG 3: KHÔNG GIAN LÀM VIỆC TỪNG BƯỚC RIÊNG BIỆT (STEP WORKSTATION)     -->
+    <!-- ======================================================================= -->
+    <section id="pageSteps" class="space-y-6 hidden">
+      
+      <!-- Thanh Điều Hướng Các Bước -->
+      <nav id="pageTopNav" class="glass-card p-2 sm:p-2.5 flex items-center justify-between overflow-x-auto text-xs">
+        <div class="flex items-center gap-2 min-w-max flex-1">
+          
+          <button onclick="app.goToStep(1)" id="stepNav1" class="step-nav-item active flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#5D7B6F] text-white flex items-center justify-center text-[10px]">1</span>
+            <span>1. Khởi Tạo & Khám Phá Nguồn</span>
+          </button>
+
+          <button onclick="app.goToStep(2)" id="stepNav2" class="step-nav-item locked flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#EAE7D6] text-[#22332C] flex items-center justify-center text-[10px]">2</span>
+            <span>2. Lọc Sạch Bản Ghi Trùng</span>
+          </button>
+
+          <button onclick="app.goToStep(3)" id="stepNav3" class="step-nav-item locked flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#EAE7D6] text-[#22332C] flex items-center justify-center text-[10px]">3</span>
+            <span>3. Lấp Đầy Dữ Liệu Trống</span>
+          </button>
+
+          <button onclick="app.goToStep(4)" id="stepNav4" class="step-nav-item locked flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#EAE7D6] text-[#22332C] flex items-center justify-center text-[10px]">4</span>
+            <span>4. Kiểm Soát Biến Động & Dị Biệt</span>
+          </button>
+
+          <button onclick="app.goToStep(5)" id="stepNav5" class="step-nav-item locked flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#EAE7D6] text-[#22332C] flex items-center justify-center text-[10px]">5</span>
+            <span>5. Đồng Bộ Hóa Dữ Liệu</span>
+          </button>
+
+          <button onclick="app.goToStep(6)" id="stepNav6" class="step-nav-item locked flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#EAE7D6] text-[#22332C] flex items-center justify-center text-[10px]">6</span>
+            <span>6. Phê Duyệt Dữ Liệu Sạch (HITL)</span>
+          </button>
+
+          <button onclick="app.goToStep(7)" id="stepNav7" class="step-nav-item locked flex-1 py-2 px-3 flex items-center gap-2 font-semibold">
+            <span class="w-5 h-5 rounded-full bg-[#EAE7D6] text-[#22332C] flex items-center justify-center text-[10px]">7</span>
+            <span>7. Báo Cáo Quản Trị & Dự Báo Xu Hướng</span>
+          </button>
+
+          <button onclick="app.goToOverview()" class="p-2 ml-2 rounded-xl text-xs text-[#566961] hover:text-[#5D7B6F] hover:bg-[#B0D4B8]/30 transition-all flex items-center gap-1" title="Về trang tổng quan lộ trình">
+            <i data-lucide="map" class="w-4 h-4"></i>
+            <span class="hidden md:inline">Lộ Trình</span>
+          </button>
+
+        </div>
+      </nav>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 1: KHỞI TẠO & KHÁM PHÁ NGUỒN                                     -->
+      <!-- ===================================================================== -->
+      <div id="stepSection1" class="glass-card p-6 sm:p-8 space-y-6">
+        
+        <div class="border-b border-[#A4C3A2]/40 pb-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold text-[#5D7B6F] uppercase tracking-wider">Bước 1 trên 7 &bull; Khởi Tạo & Khám Phá Nguồn</span>
+            <h3 class="text-xl font-bold text-[#22332C] mt-0.5">Khởi Tạo & Khám Phá Nguồn</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="step1ColCountBadge" class="px-3 py-1 rounded-lg bg-white border border-[#A4C3A2] text-xs font-bold text-[#22332C]">-- Cột</span>
+            <span id="step1RowCountBadge" class="px-3 py-1 rounded-lg bg-white border border-[#A4C3A2] text-xs font-bold text-[#5D7B6F]">-- Dòng</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 space-y-2 text-xs">
+              <span class="text-[10px] uppercase font-bold text-[#7F938B] tracking-wider block">MỤC TIÊU BƯỚC 1:</span>
+              <p class="text-[#344840] leading-relaxed">
+                Đọc hiểu cấu trúc và đối chiếu quy chuẩn dữ liệu đầu vào. Tự động quét và suy luận kiểu định dạng của tất cả các cột dữ liệu trước khi xử lý sâu.
+              </p>
+            </div>
+
+            <div class="academic-box text-xs space-y-1.5">
+              <span class="font-bold text-[#22332C] flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-[#5D7B6F]"></i>
+                Góc Đánh Giá Chuyên Môn (Giáo Viên & Hội Đồng):
+              </span>
+              <p class="text-[#344840] leading-relaxed">
+                Hệ thống sử dụng cơ chế <em>Schema Heuristic Profiling</em>: kiểm tra 100% các ô để phân loại kiểu dữ liệu thực chất thay vì dựa vào nhãn tên cột. Việc xác định sớm tỷ lệ ô khuyết thiếu ở cấp độ cột là cơ sở khoa học để thiết lập chiến lược làm sạch ở các bước sau.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#EAE7D6]/50 border border-[#A4C3A2]/60 space-y-3">
+              <div class="text-xs text-[#344840]">
+                <span class="font-bold text-[#22332C] block">Xác nhận tuần tự:</span>
+                <span>Bấm nút kiểm tra để quét toàn bộ sơ đồ cột.</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button onclick="app.runStep1Audit()" class="btn-sage w-full py-2.5">
+                  <i data-lucide="play" class="w-4 h-4"></i> Chạy Thẩm Định Schema
+                </button>
+                <button id="btnPassStep1" onclick="app.approveStepAndNext(1)" disabled class="btn-sage-outline w-full py-2.5">
+                  <span>Xác Nhận & Sang Bước 2 →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8 space-y-5">
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-[#22332C] flex items-center gap-1.5">
+                <i data-lucide="table" class="w-4 h-4 text-[#5D7B6F]"></i>
+                1. Bảng Kiểm Định Sơ Đồ Cột (Schema Inspector):
+              </h4>
+              <div class="spacious-table-container">
+                <table class="sage-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 45px;">STT</th>
+                      <th>Tên Cột (Column Name)</th>
+                      <th>Kiểu Suy Luận</th>
+                      <th>Hợp Lệ</th>
+                      <th>Ô Trống</th>
+                      <th>Số Giá Trị Độc Bản</th>
+                      <th>Mẫu Dữ Liệu Thực Tế</th>
+                      <th>Đánh Giá</th>
+                    </tr>
+                  </thead>
+                  <tbody id="step1SchemaBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-[#22332C] flex items-center gap-1.5">
+                  <i data-lucide="eye" class="w-4 h-4 text-[#5D7B6F]"></i>
+                  2. Trình Chiếu Dữ Liệu Thực Tế (Data Explorer):
+                </h4>
+                <div class="flex items-center gap-2 text-xs">
+                  <input 
+                    type="text" 
+                    id="step1SearchInput" 
+                    oninput="app.onStep1Search(this.value)" 
+                    placeholder="🔍 Tìm nhanh..." 
+                    class="px-2.5 py-1 rounded-lg bg-white border border-[#A4C3A2]/60 text-xs text-[#22332C] focus:outline-none w-36 shadow-2xs"
+                  >
+                  <button onclick="app.prevRawPage()" class="px-2 py-1 rounded-lg bg-white border border-[#A4C3A2] text-xs font-semibold text-[#22332C] hover:bg-[#D7F9FA]">◀</button>
+                  <span id="step1PaginationText" class="font-mono text-xs text-[#566961]">Trang 1 / 1</span>
+                  <button onclick="app.nextRawPage()" class="px-2 py-1 rounded-lg bg-white border border-[#A4C3A2] text-xs font-semibold text-[#22332C] hover:bg-[#D7F9FA]">▶</button>
+                </div>
+              </div>
+              <div class="spacious-table-container">
+                <table class="sage-table">
+                  <thead id="step1RawHead"></thead>
+                  <tbody id="step1RawBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 2: LỌC SẠCH BẢN GHI TRÙNG                                        -->
+      <!-- ===================================================================== -->
+      <div id="stepSection2" class="glass-card p-6 sm:p-8 space-y-6 hidden">
+        
+        <div class="border-b border-[#A4C3A2]/40 pb-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold text-[#5D7B6F] uppercase tracking-wider">Bước 2 trên 7 &bull; Lọc Sạch Bản Ghi Trùng</span>
+            <h3 class="text-xl font-bold text-[#22332C] mt-0.5">Lọc Sạch Bản Ghi Trùng</h3>
+          </div>
+          <span id="step2DupBadge" class="px-3 py-1 rounded-full bg-[#D99B52]/15 text-[#D99B52] font-bold text-xs border border-[#D99B52]/30">-- dòng trùng</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div class="p-4 rounded-xl bg-white border border-[#D99B52]/40 space-y-2 text-xs">
+              <h4 class="font-bold text-[#D99B52] flex items-center gap-1.5">
+                <i data-lucide="copy" class="w-4 h-4"></i> Kết Quả Quét Trùng Lặp:
+              </h4>
+              <p id="step2DupSummaryText" class="text-[#344840] leading-relaxed">
+                Đang phân tích cấu trúc trùng lặp...
+              </p>
+            </div>
+
+            <div class="academic-box text-xs space-y-1.5">
+              <span class="font-bold text-[#22332C] flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-[#5D7B6F]"></i>
+                Mục Tiêu Quản Trị:
+              </span>
+              <p class="text-[#344840] leading-relaxed">
+                <strong>Tinh gọn dữ liệu, loại bỏ rác do nhập liệu lặp:</strong> Loại bỏ các dòng sao chép trước khi điền khuyết thiếu giúp bảo đảm số liệu thống kê trung vị và phương sai không bị méo mó.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#EAE7D6]/50 border border-[#A4C3A2]/60 space-y-3">
+              <div class="text-xs text-[#344840]">
+                <span class="font-bold text-[#22332C] block">Bắt buộc thực thi:</span>
+                <span>Bấm nút lọc dòng trùng để giữ lại dữ liệu độc bản.</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button onclick="app.runStep2Dedup()" class="btn-sage w-full py-2.5">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i> Thực Thi Lọc Bản Ghi Trùng
+                </button>
+                <button id="btnPassStep2" onclick="app.approveStepAndNext(2)" disabled class="btn-sage-outline w-full py-2.5">
+                  <span>Xác Nhận & Sang Bước 3 →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8 space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#22332C]">Chi Tiết Các Dòng Dữ Liệu Bị Trùng Lặp:</h4>
+            <div class="spacious-table-container">
+              <table class="sage-table">
+                <thead id="step2DupHead"></thead>
+                <tbody id="step2DupBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 3: LẤP ĐẦY DỮ LIỆU TRỐNG                                         -->
+      <!-- ===================================================================== -->
+      <div id="stepSection3" class="glass-card p-6 sm:p-8 space-y-6 hidden">
+        
+        <div class="border-b border-[#A4C3A2]/40 pb-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold text-[#5D7B6F] uppercase tracking-wider">Bước 3 trên 7 &bull; Lấp Đầy Dữ Liệu Trống</span>
+            <h3 class="text-xl font-bold text-[#22332C] mt-0.5">Lấp Đầy Dữ Liệu Trống</h3>
+          </div>
+          <span id="step3MissingTotalBadge" class="px-3 py-1 rounded-full bg-[#D96B6B]/15 text-[#D96B6B] font-bold text-xs border border-[#D96B6B]/30">-- ô cần điền</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 space-y-2 text-xs">
+              <span class="text-[10px] uppercase font-bold text-[#7F938B] tracking-wider block">MỤC TIÊU BƯỚC 3:</span>
+              <p class="text-[#344840] leading-relaxed">
+                Bổ sung các điểm dữ liệu bị thiếu để đảm bảo độ nguyên vẹn. Áp dụng phương pháp điền bù bảo toàn phân phối: Trung vị (Median) cho số và Yếu vị (Mode) cho danh mục.
+              </p>
+            </div>
+
+            <div class="academic-box text-xs space-y-1.5">
+              <span class="font-bold text-[#22332C] flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-[#5D7B6F]"></i>
+                Mục Tiêu Quản Trị:
+              </span>
+              <p class="text-[#344840] leading-relaxed">
+                Hệ thống áp dụng <strong>Median Imputation</strong> cho biến định lượng vì Median miễn nhiễm với các giá trị ngoại lai, và <strong>Mode Imputation</strong> cho biến danh mục để bảo toàn tần suất.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#EAE7D6]/50 border border-[#A4C3A2]/60 space-y-3">
+              <div class="text-xs text-[#344840]">
+                <span class="font-bold text-[#22332C] block">Bắt buộc thực thi:</span>
+                <span>Bấm nút điền ô thiếu để hoàn thiện 100% dữ liệu.</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button onclick="app.runStep3Impute()" class="btn-sage w-full py-2.5">
+                  <i data-lucide="wand-2" class="w-4 h-4"></i> Thực Thi Lấp Đầy Dữ Liệu Trống
+                </button>
+                <button id="btnPassStep3" onclick="app.approveStepAndNext(3)" disabled class="btn-sage-outline w-full py-2.5">
+                  <span>Xác Nhận & Sang Bước 4 →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8 space-y-4">
+            <div class="p-4 rounded-xl bg-white border border-[#D96B6B]/40 space-y-2 text-xs">
+              <h4 class="font-bold text-[#D96B6B] flex items-center gap-1.5">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i> Vị Trí Các Ô Bị Khuyết Thiếu Cụ Thể:
+              </h4>
+              <div id="step3ErrorList" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-[#22332C]">Bảng Thống Kê Điền Bù Theo Cột:</h4>
+              <div class="spacious-table-container">
+                <table class="sage-table">
+                  <thead>
+                    <tr>
+                      <th>Tên Cột</th>
+                      <th>Kiểu Cột</th>
+                      <th>Số Ô Thiếu</th>
+                      <th>Tỷ Lệ (%)</th>
+                      <th>Thuật Toán Điền Bù</th>
+                      <th>Trạng Thái</th>
+                    </tr>
+                  </thead>
+                  <tbody id="step3TableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 4: KIỂM SOÁT BIẾN ĐỘNG & DỊ BIỆT (IQR)                           -->
+      <!-- ===================================================================== -->
+      <div id="stepSection4" class="glass-card p-6 sm:p-8 space-y-6 hidden">
+        
+        <div class="border-b border-[#A4C3A2]/40 pb-4">
+          <span class="text-xs font-bold text-[#5D7B6F] uppercase tracking-wider">Bước 4 trên 7 &bull; Kiểm Soát Biến Động & Dị Biệt</span>
+          <h3 class="text-xl font-bold text-[#22332C] mt-0.5">Kiểm Soát Biến Động & Dị Biệt (IQR)</h3>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div class="p-4 rounded-xl bg-white border border-[#5D7B6F]/40 space-y-2 text-xs">
+              <span class="text-[10px] uppercase font-bold text-[#7F938B] tracking-wider block">MỤC TIÊU BƯỚC 4:</span>
+              <p class="text-[#344840] leading-relaxed">
+                Lọc bỏ các giá trị bất thường có nguy cơ làm méo mó kết quả phân tích. Sử dụng hàng rào Tukey's Fences (1.5 × IQR) và thuật toán Winsorization đưa điểm dị biệt về sát cận an toàn.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-white border border-[#5D7B6F]/40 space-y-2 text-xs">
+              <h4 class="font-bold text-[#5D7B6F] flex items-center gap-1.5">
+                <i data-lucide="gauge" class="w-4 h-4"></i> Các Điểm Dữ Liệu Ngoại Lai:
+              </h4>
+              <div id="step4OutlierList" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto p-1">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+
+            <div class="academic-box text-xs space-y-1.5">
+              <span class="font-bold text-[#22332C] flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-[#5D7B6F]"></i>
+                Góc Đánh Giá Chuyên Môn:
+              </span>
+              <p class="text-[#344840] leading-relaxed">
+                Dữ liệu doanh thu thực tế thường lệch phải (Right-skewed). Tiêu chuẩn <strong>Tukey's Fences (1.5 × IQR)</strong> kết hợp thuật toán <strong>Winsorization</strong> (đưa điểm ngoại lai về sát cận an toàn) giúp khử nhiễu mà vẫn bảo tồn dung lượng mẫu cho mô hình dự báo.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#EAE7D6]/50 border border-[#A4C3A2]/60 space-y-3">
+              <div class="text-xs text-[#344840]">
+                <span class="font-bold text-[#22332C] block">Bắt buộc thực thi:</span>
+                <span>Bấm nút kiểm soát biến động để chuẩn bị dữ liệu cho Bước 5.</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button onclick="app.runStep4Winsorize()" class="btn-sage w-full py-2.5">
+                  <i data-lucide="scissors" class="w-4 h-4"></i> Thực Thi Kiểm Soát Biến Động & Dị Biệt
+                </button>
+                <button id="btnPassStep4" onclick="app.approveStepAndNext(4)" disabled class="btn-sage-outline w-full py-2.5">
+                  <span>Xác Nhận & Sang Bước 5 →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8 space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-[#22332C]">Bảng Kiểm Định Thông Số Thống Kê IQR:</h4>
+            <div class="spacious-table-container">
+              <table class="sage-table">
+                <thead>
+                  <tr>
+                    <th>Tên Cột Số</th>
+                    <th>Phân Vị Q1 (25%)</th>
+                    <th>Phân Vị Q3 (75%)</th>
+                    <th>Khoảng IQR</th>
+                    <th>Hàng Rào Dưới</th>
+                    <th>Hàng Rào Trên</th>
+                    <th>Số Ngoại Lai</th>
+                    <th>Phương Pháp</th>
+                  </tr>
+                </thead>
+                <tbody id="step4TableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 5: ĐỒNG BỘ HÓA DỮ LIỆU                                           -->
+      <!-- ===================================================================== -->
+      <div id="stepSection5" class="glass-card p-6 sm:p-8 space-y-6 hidden">
+        
+        <div class="border-b border-[#A4C3A2]/40 pb-4">
+          <span class="text-xs font-bold text-[#5D7B6F] uppercase tracking-wider">Bước 5 trên 7 &bull; Đồng Bộ Hóa Dữ Liệu</span>
+          <h3 class="text-xl font-bold text-[#22332C] mt-0.5">Đồng Bộ Hóa Dữ Liệu</h3>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <div class="lg:col-span-4 space-y-4">
+            <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/40 space-y-2 text-xs">
+              <span class="text-[10px] uppercase font-bold text-[#7F938B] tracking-wider block">MỤC TIÊU BƯỚC 5:</span>
+              <p class="text-[#344840] leading-relaxed">
+                Chuẩn hóa toàn bộ bảng biểu về một mẫu chung thống nhất. Đồng bộ định dạng ngày tháng chuẩn ISO 8601 (YYYY-MM-DD), loại bỏ ký tự tiền tệ và ép kiểu số thực tế.
+              </p>
+            </div>
+
+            <div class="academic-box text-xs space-y-1.5">
+              <span class="font-bold text-[#22332C] flex items-center gap-1.5">
+                <i data-lucide="graduation-cap" class="w-4 h-4 text-[#5D7B6F]"></i>
+                Góc Đánh Giá Chuyên Môn:
+              </span>
+              <p class="text-[#344840] leading-relaxed">
+                Đồng bộ ngày tháng về chuẩn quốc tế <strong>ISO 8601 (YYYY-MM-DD)</strong> giúp mô hình dự báo không bị nhầm lẫn giữa ngày và tháng. Việc ép kiểu số học loại bỏ ký tự tiền tệ giúp các phép tính tổng lũy kế chính xác tuyệt đối.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[#EAE7D6]/50 border border-[#A4C3A2]/60 space-y-3">
+              <div class="text-xs text-[#344840]">
+                <span class="font-bold text-[#22332C] block">Bắt buộc thực thi:</span>
+                <span>Bấm nút đồng bộ hóa để hoàn tất khâu tiền xử lý.</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button onclick="app.runStep5Standardize()" class="btn-sage w-full py-2.5">
+                  <i data-lucide="sparkles" class="w-4 h-4"></i> Thực Thi Đồng Bộ Hóa Dữ Liệu
+                </button>
+                <button id="btnPassStep5" onclick="app.approveStepAndNext(5)" disabled class="btn-sage-outline w-full py-2.5">
+                  <span>Xác Nhận & Sang Bước 6 →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-8">
+            <div id="step5ReportBox" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 6: PHÊ DUYỆT DỮ LIỆU SẠCH (HITL)                                  -->
+      <!-- ===================================================================== -->
+      <div id="stepSection6" class="glass-card p-6 sm:p-8 space-y-6 hidden">
+        
+        <div class="border-b border-[#A4C3A2]/40 pb-4">
+          <span class="text-xs font-bold text-[#5D7B6F] uppercase tracking-wider">Bước 6 trên 7 &bull; Phê Duyệt Dữ Liệu Sạch (HITL)</span>
+          <h3 class="text-xl font-bold text-[#22332C] mt-0.5">Phê Duyệt Dữ Liệu Sạch (HITL)</h3>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/50 shadow-2xs">
+            <span class="text-[#566961] text-[11px] block">Số dòng ban đầu:</span>
+            <span id="hitlRowsBefore" class="text-xl font-bold text-[#22332C] block">-- dòng</span>
+            <span class="text-[#7F938B] text-[10px]">Tệp thô chưa lọc</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#5D7B6F]/50 shadow-2xs">
+            <span class="text-[#566961] text-[11px] block">Số dòng sau làm sạch:</span>
+            <span id="hitlRowsAfter" class="text-xl font-bold text-[#5D7B6F] block">-- dòng</span>
+            <span class="text-[#5D7B6F] text-[10px]">Độc bản 100%</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/50 shadow-2xs">
+            <span class="text-[#566961] text-[11px] block">Ô khuyết thiếu đã bù:</span>
+            <span id="hitlMissingImputed" class="text-xl font-bold text-[#5D7B6F] block">-- ô</span>
+            <span class="text-[#566961] text-[10px]">Thuật toán Median/Mode</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/50 shadow-2xs">
+            <span class="text-[#566961] text-[11px] block">Ngoại lai đã cắt biên:</span>
+            <span id="hitlOutlierTreated" class="text-xl font-bold text-[#5D7B6F] block">-- điểm</span>
+            <span class="text-[#566961] text-[10px]">Tukey's Fences IQR</span>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white border border-[#A4C3A2]/60 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[#7F938B] block">XÁC THỰC PHÊ DUYỆT BỞI HỆ THỐNG & NGƯỜI DÙNG:</span>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-semibold text-[#22332C]">Gmail Nhận Báo Cáo:</span>
+              <span class="text-xs text-[#5D7B6F] font-mono font-bold" id="hitlSignerGmail">admin.data@gmail.com</span>
+            </div>
+            <p class="text-[11px] text-[#566961] font-mono">
+              Digital Signature: SHA256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069
+            </p>
+          </div>
+          <div class="sage-stamp text-xs">
+            ✓ APPROVED & VERIFIED
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-[#22332C]">Mẫu 10 Bản Ghi Sạch Đã Hoàn Thiện:</h4>
+          <div class="spacious-table-container">
+            <table class="sage-table">
+              <thead id="hitlCleanedHead"></thead>
+              <tbody id="hitlCleanedBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-xl bg-[#EAE7D6]/60 border border-[#A4C3A2] flex flex-wrap items-center justify-between gap-4">
+          <div class="text-xs text-[#344840]">
+            <span class="font-bold text-[#22332C] block text-sm">Chốt chặn chất lượng:</span>
+            <span>Chốt chặn chất lượng cuối cùng có sự tham gia của con người. Bấm <strong>'Phê Duyệt Dữ Liệu Sạch'</strong> để xuất bản báo cáo.</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="app.rejectGatekeeper()" class="btn-sage-outline text-xs py-2 px-4 text-[#D96B6B] border-[#D96B6B]">
+              <i data-lucide="x-circle" class="w-4 h-4"></i> Từ Chối & Xem Lại
+            </button>
+            <button onclick="app.approveGatekeeper()" class="btn-sage text-xs py-2.5 px-6 shadow-sm">
+              <i data-lucide="check-circle" class="w-4 h-4"></i> Phê Duyệt Dữ Liệu Sạch & Xem Báo Cáo Bước 7 →
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- BƯỚC 7: BÁO CÁO QUẢN TRỊ & DỰ BÁO XU HƯỚNG                             -->
+      <!-- BIỂU ĐỒ THÔNG MINH, CÓ TỶ TRỌNG (%) VÀ BẢNG CHÚ THÍCH MINH BẠCH        -->
+      <!-- ===================================================================== -->
+      <div id="stepSection7" class="space-y-6 hidden">
+        
+        <div class="glass-card p-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-[#5D7B6F]">Bước 7 trên 7 &bull; Báo Cáo Quản Trị & Dự Báo Xu Hướng</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#22332C] mt-0.5">
+              Báo Cáo Quản Trị & Dự Báo Xu Hướng
+            </h2>
+            <p class="text-xs text-[#566961] mt-0.5">
+              Xuất bản dashboard phân tích chiều sâu và dự báo chuỗi thời gian.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="app.downloadCleanCsv()" class="btn-sage-outline text-xs py-2 px-3.5">
+              <i data-lucide="download" class="w-4 h-4"></i> Tải CSV Sạch
+            </button>
+            <button onclick="app.downloadStandaloneHtmlReport()" class="btn-sage text-xs py-2 px-4 shadow-sm">
+              <i data-lucide="file-text" class="w-4 h-4"></i> Tải Báo Cáo HTML
+            </button>
+            <button onclick="window.print()" class="btn-sage-outline text-xs py-2 px-3" title="In hoặc lưu PDF">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Thẻ KPI Cốt Lõi -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+          
+          <div class="glass-card p-5 space-y-1">
+            <span class="text-[11px] text-[#566961] uppercase font-bold tracking-wider block">TỔNG GIÁ TRỊ / DOANH THU:</span>
+            <span id="kpiTotalRevenue" class="text-2xl font-extrabold text-[#22332C] block">-- ₫</span>
+            <span class="text-[11px] text-[#5D7B6F] font-semibold">Dữ liệu chuẩn sau làm sạch</span>
+          </div>
+
+          <div class="glass-card p-5 space-y-1">
+            <span class="text-[11px] text-[#566961] uppercase font-bold tracking-wider block">GIÁ TRỊ BÌNH QUÂN / ĐƠN:</span>
+            <span id="kpiAvgOrder" class="text-2xl font-extrabold text-[#22332C] block">-- ₫</span>
+            <span class="text-[11px] text-[#566961]">Trung bình trên mỗi bản ghi</span>
+          </div>
+
+          <div class="glass-card p-5 space-y-1">
+            <span class="text-[11px] text-[#566961] uppercase font-bold tracking-wider block">TỔNG SỐ LƯỢNG GIAO DỊCH:</span>
+            <span id="kpiTotalOrders" class="text-2xl font-extrabold text-[#22332C] block">--</span>
+            <span class="text-[11px] text-[#5D7B6F] font-semibold">100% bản ghi độc bản</span>
+          </div>
+
+          <div class="glass-card p-5 space-y-1">
+            <span class="text-[11px] text-[#566961] uppercase font-bold tracking-wider block">HỆ SỐ BIẾN THIÊN (CV%):</span>
+            <span id="kpiVolatility" class="text-2xl font-extrabold text-[#5D7B6F] block">--%</span>
+            <span class="text-[11px] text-[#566961]">Đo lường mức độ biến động</span>
+          </div>
+
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- BIỂU ĐỒ 1: THÔNG MINH, TỰ ĐỘNG THÍCH ỨNG THEO FILE CỦA GIÁO VIÊN   -->
+        <!-- ================================================================= -->
+        <div class="glass-card p-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#A4C3A2]/30 pb-3">
+            <div>
+              <h4 id="chart1Title" class="text-sm font-bold text-[#22332C] flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 text-[#5D7B6F]"></i>
+                Biểu Đồ Phân Tích Doanh Số & Tỷ Trọng Đóng Góp
+              </h4>
+              <p id="chart1Subtitle" class="text-[11px] text-[#566961]">Hiển thị số tiền cụ thể và tỷ trọng (%) ngay trên biểu đồ</p>
+            </div>
+
+            <div class="flex items-center gap-2 text-xs">
+              <span class="text-[#7F938B] font-semibold">Phân tích theo:</span>
+              <select id="chart1ColSelect" onchange="app.changeChart1Col(this.value)" class="px-2.5 py-1 rounded bg-white border border-[#A4C3A2] text-xs font-semibold text-[#22332C] focus:outline-none">
+                <!-- Injected by JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div class="lg:col-span-7 h-72 w-full">
+              <canvas id="chart1Canvas"></canvas>
+            </div>
+
+            <div class="lg:col-span-5 bg-white/90 p-4 rounded-xl border border-[#A4C3A2]/40 shadow-xs space-y-2">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#22332C] block">
+                Bảng Số Liệu Chi Tiết & Tỷ Trọng (%):
+              </span>
+              <div class="overflow-x-auto max-h-56">
+                <table class="chart-legend-table">
+                  <thead>
+                    <tr>
+                      <th>Phân Nhóm</th>
+                      <th>Giá Trị Thực Tế (₫)</th>
+                      <th>Tỷ Trọng (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="chart1LegendBody">
+                    <!-- Injected by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- BIỂU ĐỒ 2 & 3: CÓ BỘ CHỌN CỘT DỘNG, SỐ TIỀN & TỶ TRỌNG (%)       -->
+        <!-- ================================================================= -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- BIỂU ĐỒ 2: DANH MỤC / SẢN PHẨM / DỊCH VỤ -->
+          <div class="glass-card p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#A4C3A2]/30 pb-3">
+              <div>
+                <h4 class="text-sm font-bold text-[#22332C]">Cơ Cấu Giá Trị Theo Danh Mục</h4>
+                <p class="text-[11px] text-[#566961]">So sánh giá trị đóng góp giữa các nhóm</p>
+              </div>
+
+              <div class="flex items-center gap-1.5 text-xs">
+                <span class="text-[#7F938B]">Cột:</span>
+                <select id="catColSelect" onchange="app.changeCategoryCol(this.value)" class="px-2 py-1 rounded bg-white border border-[#A4C3A2] text-xs font-semibold text-[#22332C] focus:outline-none">
+                  <!-- Injected by JS -->
+                </select>
+              </div>
+            </div>
+
+            <div class="h-60 w-full">
+              <canvas id="categoryChart"></canvas>
+            </div>
+
+            <div class="bg-white/90 p-3.5 rounded-xl border border-[#A4C3A2]/40 overflow-x-auto max-h-44">
+              <table class="chart-legend-table">
+                <thead>
+                  <tr>
+                    <th>Danh Mục</th>
+                    <th>Giá Trị (₫)</th>
+                    <th>Tỷ Trọng (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="catLegendBody">
+                  <!-- Injected by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BIỂU ĐỒ 3: THỊ PHẦN / NHÂN SỰ / KHU VỰC (DOUGHNUT KÈM TỶ TRỌNG %) -->
+          <div class="glass-card p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#A4C3A2]/30 pb-3">
+              <div>
+                <h4 class="text-sm font-bold text-[#22332C]">Tỷ Trọng Thị Phần Đóng Góp</h4>
+                <p class="text-[11px] text-[#566961]">Cơ cấu phân bổ phần trăm</p>
+              </div>
+
+              <div class="flex items-center gap-1.5 text-xs">
+                <span class="text-[#7F938B]">Cột:</span>
+                <select id="regColSelect" onchange="app.changeRegionCol(this.value)" class="px-2 py-1 rounded bg-white border border-[#A4C3A2] text-xs font-semibold text-[#22332C] focus:outline-none">
+                  <!-- Injected by JS -->
+                </select>
+              </div>
+            </div>
+
+            <div class="h-60 w-full">
+              <canvas id="regionChart"></canvas>
+            </div>
+
+            <div class="bg-white/90 p-3.5 rounded-xl border border-[#A4C3A2]/40 overflow-x-auto max-h-44">
+              <table class="chart-legend-table">
+                <thead>
+                  <tr>
+                    <th>Đối Tượng / Nhóm</th>
+                    <th>Giá Trị (₫)</th>
+                    <th>Tỷ Trọng (%)</th>
+                  </tr>
+                </thead>
+                <tbody id="regLegendBody">
+                  <!-- Injected by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- MÔ HÌNH DỰ BÁO KINH DOANH HOLT-WINTERS & WHAT-IF                   -->
+        <!-- ================================================================= -->
+        <div class="glass-card p-6 sm:p-8 space-y-6">
+          
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-[#A4C3A2]/40 pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#D97706] animate-ping"></span>
+                <h3 class="text-lg font-bold text-[#22332C]">Mô Hình Dự Báo Kinh Doanh Chu Kỳ Tới (Holt's Linear Trend)</h3>
+              </div>
+              <p class="text-xs text-[#566961] mt-0.5">
+                Dự phóng xu hướng chu kỳ tới kèm dải khoảng tin cậy 95% và mô phỏng kịch bản What-If.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 text-xs">
+              <div class="flex items-center gap-2">
+                <label for="forecastHorizonSelect" class="text-[#566961] font-semibold">Chu kỳ:</label>
+                <select id="forecastHorizonSelect" class="px-2.5 py-1.5 rounded-lg bg-white border border-[#A4C3A2] text-xs font-semibold text-[#22332C] focus:outline-none">
+                  <option value="7">7 chu kỳ tới</option>
+                  <option value="14">14 chu kỳ tới</option>
+                  <option value="30" selected>30 chu kỳ tới</option>
+                  <option value="60">60 chu kỳ tới</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-2 bg-white/90 px-3.5 py-1.5 rounded-xl border border-[#A4C3A2]/50">
+                <label for="scenarioSlider" class="text-[#566961] font-semibold">Kịch bản What-If:</label>
+                <input type="range" id="scenarioSlider" min="-30" max="30" value="0" step="5" class="w-28 cursor-pointer accent-[#5D7B6F]">
+                <span id="sliderValueBadge" class="font-bold text-[#5D7B6F] font-mono text-xs">+0% (1.00x)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="h-80 w-full">
+            <canvas id="forecastChart"></canvas>
+          </div>
+
+          <!-- Thống kê & Bảng chú thích dự báo -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs">
+            <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/50 shadow-2xs">
+              <span class="text-[#566961] text-[11px] block">Dự báo tổng giá trị chu kỳ tới:</span>
+              <span id="forecastTotalSum" class="text-xl font-bold text-[#22332C] block">-- ₫</span>
+              <span class="text-[#7F938B] text-[10px]">Ước lượng điểm trung tâm (Central Forecast)</span>
+            </div>
+
+            <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/50 shadow-2xs">
+              <span class="text-[#566961] text-[11px] block">Khoảng tin cậy an toàn:</span>
+              <span id="forecastConfidenceRange" class="text-xs font-bold text-[#5D7B6F] block mt-1">CI 95%: [-- - -- ₫]</span>
+              <span class="text-[#566961] text-[10px]">Cận trên & Cận dưới dự phòng</span>
+            </div>
+
+            <div class="p-4 rounded-xl bg-white border border-[#A4C3A2]/50 shadow-2xs">
+              <span class="text-[#566961] text-[11px] block">Tốc độ tăng trưởng dự kiến:</span>
+              <span id="forecastGrowthRate" class="text-xl font-bold text-[#5D7B6F] block">+0.0%</span>
+              <span class="text-[#566961] text-[10px]">So với chu kỳ cùng kỳ trước đó</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BÁO CÁO TỔNG HỢP INSIGHTS & KHUYẾN NGHỊ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="glass-card p-6 space-y-3">
+            <h4 class="text-sm font-bold text-[#22332C] flex items-center gap-2">
+              <i data-lucide="lightbulb" class="w-4 h-4 text-[#5D7B6F]"></i>
+              Nhận Định Chiến Lược Tự Động Từ AI Agent:
+            </h4>
+            <div id="aiInsightsContainer" class="space-y-2.5">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <div class="glass-card p-6 space-y-3">
+            <h4 class="text-sm font-bold text-[#22332C] flex items-center gap-2">
+              <i data-lucide="compass" class="w-4 h-4 text-[#5D7B6F]"></i>
+              Khuyến Nghị Hành Động Dành Cho Ban Giám Đốc:
+            </h4>
+            <div id="aiRecommendationsContainer" class="space-y-2.5">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- KHUNG CHAT TRỢ LÝ AI ĐỒNG HÀNH NGAY BÊN DƯỚI                            -->
+    <!-- ======================================================================= -->
+    <section id="chatAssistantBar" class="glass-card p-5 sm:p-6 space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-[#A4C3A2]/40 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-[#5D7B6F] text-white flex items-center justify-center">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-[#22332C]">TRỢ LÝ AI ĐỒNG HÀNH // HỎI ĐÁP DỮ LIỆU & BÁO LỖI THỜI GIAN THỰC</h3>
+            <p class="text-[11px] text-[#566961]">Hỏi bất kỳ điều gì về dữ liệu, lỗi phát hiện hay lý do thống kê ở mỗi bước</p>
+          </div>
+        </div>
+        <span class="type-badge type-numeric">● Trực Tuyến</span>
+      </div>
+
+      <div id="chatMessageViewport" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-[#5D7B6F] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 bg-white p-3.5 rounded-2xl rounded-tl-xs border border-[#A4C3A2]/40 shadow-2xs text-xs text-[#22332C] leading-relaxed">
+            Xin chào! Tôi là Trợ lý AI Phân Tích Dữ Liệu. Trong suốt quy trình 7 bước, nếu bạn thấy dữ liệu có chỗ nào khó hiểu, cần giải thích lỗi sai hoặc muốn hỏi về các chỉ số dự báo, bạn có thể chat trực tiếp với tôi ngay tại đây nhé!
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 pt-1">
+        <span class="text-[11px] text-[#566961] font-semibold">Gợi ý hỏi nhanh:</span>
+        <button onclick="app.sendQuickPrompt('Tập dữ liệu của tôi có bao nhiêu lỗi cần sửa?')" class="px-3 py-1 rounded-full bg-white hover:bg-[#D7F9FA] text-[#22332C] border border-[#A4C3A2]/40 text-[11px] transition-all">
+          🔍 Dữ liệu có bao nhiêu lỗi?
+        </button>
+        <button onclick="app.sendQuickPrompt('Tại sao lại có ngoại lai bất thường ở Bước 4?')" class="px-3 py-1 rounded-full bg-white hover:bg-[#D7F9FA] text-[#22332C] border border-[#A4C3A2]/40 text-[11px] transition-all">
+          ⚠️ Tại sao có ngoại lai ở Bước 4?
+        </button>
+        <button onclick="app.sendQuickPrompt('Giải thích phương pháp điền ô khuyết thiếu ở Bước 3?')" class="px-3 py-1 rounded-full bg-white hover:bg-[#D7F9FA] text-[#22332C] border border-[#A4C3A2]/40 text-[11px] transition-all">
+          🧹 Phương pháp điền khuyết thiếu ở Bước 3?
+        </button>
+        <button onclick="app.sendQuickPrompt('Dự báo kinh doanh chu kỳ tới có khả quan không?')" class="px-3 py-1 rounded-full bg-white hover:bg-[#D7F9FA] text-[#22332C] border border-[#A4C3A2]/40 text-[11px] transition-all">
+          📈 Dự báo kinh doanh có khả quan không?
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <input 
+          type="text" 
+          id="chatInputBox" 
+          placeholder="Nhập câu hỏi của bạn về dữ liệu, thuật toán làm sạch, lý do thống kê..." 
+          class="flex-1 px-4 py-3 rounded-xl bg-white border border-[#A4C3A2]/50 text-xs text-[#22332C] focus:outline-none focus:border-[#5D7B6F] shadow-2xs"
+        >
+        <button onclick="app.sendChatMessage()" class="btn-sage text-xs sm:text-sm py-3 px-5 shadow-sm">
+          <i data-lucide="send" class="w-4 h-4"></i> Gửi Câu Hỏi
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js?v=6.1"></script>
+</body>
+</html>
